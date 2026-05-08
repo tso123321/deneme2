@@ -1,164 +1,263 @@
-# 🧬 RNA-seq Workflow – Script Açıklamaları
+# OMICS Course - HPC Linux Conda Training
 
-## 00_R_basics.R  
-**Amaç:**  
-R programlama diline giriş yapmak ve temel veri işlemlerini öğretmek.
-
-**Ne yapılıyor:**  
-- Değişken tanımlama  
-- Vektör ve data.frame oluşturma  
-- Temel fonksiyonlar (`mean`, `sum`, vb.)  
-- Veri okuma ve yazma  
-- Basit veri manipülasyonu  
-
-Bu script, RNA-seq analizine başlamadan önce gerekli R altyapısını sağlar.
+Bu repository, biyoinformatik analizlerde kullanılan **HPC (High Performance Computing)** sistemlerinin temel kullanımını öğretmek amacıyla hazırlanmıştır. Amaç, katılımcıların teoriyi okumaktan ziyade **komutları çalıştırarak öğrenmesini sağlamaktır**.
 
 ---
 
-## 01_preprocessing_filtering.R  
-**Amaç:**  
-Düşük ifade edilen genleri filtreleyerek analizdeki gürültüyü azaltmak.
+## Eğitim Akışı
 
-**Ne yapılıyor:**  
-- Count ve CPM tabloları okunur  
-- CPM (Counts Per Million) hesaplanır  
-- CPM ≥ 1 filtresi uygulanır  
-- Düşük ifade edilen genler çıkarılır  
-
-Bu adım:
-- false positive sonuçları azaltır  
-- istatistiksel gücü artırır  
+Linux → Dosya yönetimi → Conda → Tool kurulumu → Script → HPC → SLURM
 
 ---
 
-## 02_annotation.R  
-**Amaç:**  
-Ensembl gene ID’lerini biyolojik olarak anlamlı gene isimleri ile eşleştirmek.
 
-**Ne yapılıyor:**  
-- GENCODE GTF dosyası `rtracklayer` ile okunur  
-- `gene_id`, `gene_name`, `gene_type` bilgileri çıkarılır  
-- Gen koordinat bilgileri eklenir (chr, start, end, strand)  
-- Count tablosu ile birleştirilir  
+Bu repository’yi çalıştırmadan önce gerekli conda environment oluşturulmalıdır.
 
-### 📥 GENCODE Veri İndirme
+Codespaces ve bazı HPC ortamlarında conda otomatik aktif gelmez. Bu nedenle önce conda’yı shell’e bağlayın:
 
-Bu adımı çalıştırmadan önce GENCODE annotation dosyasını indirmeniz gerekmektedir.
+source /opt/conda/etc/profile.d/conda.sh
 
-İndirme linki:  
-https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_46/gencode.v46.primary_assembly.basic.annotation.gtf.gz  
+Ardından environment oluşturun ve aktive edin:
 
-gunzip gencode.v46.primary_assembly.basic.annotation.gtf.gz
+conda create -n hpc_course -y  
+conda activate hpc_course  
 
-mv gencode.v46.primary_assembly.basic.annotation.gtf data/
+Gerekli biyoinformatik araçları kurun:
+
+conda install -c conda-forge -c bioconda seqkit fastqc samtools -y  
 
 ---
 
-## 03_PCA.R  
-**Amaç:**  
-Örnekler arasındaki genel varyasyonu ve grup ayrımını incelemek.
+### Kurulum Kontrolü
 
-**Ne yapılıyor:**  
-- Normalized veri kullanılır  
-- Principal Component Analysis (PCA) uygulanır  
-- Örneklerin 2D uzaydaki dağılımı görselleştirilir  
+which seqkit  
+which fastqc  
+which samtools  
 
-PCA ile:
-- batch effect  
-- outlier örnekler  
-- grup ayrımı  
+Çıktı şu formatta olmalıdır:
 
-gözlemlenir.
+/opt/conda/envs/hpc_course/...
 
 ---
 
-## 04_sample_correlation_heatmap.R  
-**Amaç:**  
-Örnekler arasındaki benzerliği ölçmek.
+### ÖNEMLİ
 
-**Ne yapılıyor:**  
-- Korelasyon matrisi hesaplanır  
-- Heatmap oluşturulur  
+- `bioconda` tek başına yeterli değildir, `conda-forge` ile birlikte kullanılmalıdır  
+- Conda environment aktif değilse tool’lar çalışmaz  
+- Script içinde conda environment tekrar aktive edilmelidir:
 
-Bu analiz:
-- replikaların tutarlılığını gösterir  
-- beklenmeyen örnekleri ortaya çıkarır  
+source /opt/conda/etc/profile.d/conda.sh  
+conda activate hpc_course  
+---
+
+## Eğitimi Çalıştırma
+
+Tüm eğitim tek komutla çalıştırılabilir:
+
+bash scripts/run_all_local.sh  
+
+Bu script aşağıdaki adımları sırasıyla çalıştırır:
+
+1. Linux temel komutları  
+2. Conda environment kontrolü  
+3. Tool çalıştırma (seqkit)  
+4. Loop ile çoklu dosya işleme  
 
 ---
 
-## 05_differential_expression_edgeR.R  
-**Amaç:**  
-İki grup (SC vs Ssh1) arasında diferansiyel ifade edilen genleri belirlemek.
+## Repository Yapısı
 
-**Ne yapılıyor:**  
-- Count matrix oluşturulur  
-- edgeR ile normalizasyon (TMM) yapılır  
-- Dispersion hesaplanır  
-- exactTest uygulanır  
-- logFC ve FDR hesaplanır  
-- hangi genlerin up/down regüle olduğunu belirler  
+.  
+├── data/        → örnek veri (FASTA)  
+├── scripts/     → eğitim scriptleri  
+├── results/     → analiz çıktıları  
+└── slurm/       → HPC job scriptleri  
 
 ---
 
-## 06_volcano_MA_plots.R  
-**Amaç:**  
-Diferansiyel ekspresyon sonuçlarını görselleştirmek.
+# Linux Nedir?
 
-**Ne yapılıyor:**  
-- Volcano plot oluşturulur  
-- MA plot oluşturulur  
-
-Bu grafikler:
-- anlamlı genleri hızlıca görmeyi sağlar  
-- effect size vs significance ilişkisini gösterir  
+Linux, HPC sistemlerinin temel işletim sistemidir.  
+Tüm işlemler terminal üzerinden yapılır.
 
 ---
 
-## 07_significant_gene_heatmap.R  
-**Amaç:**  
-Anlamlı genlerin ekspresyon patternlerini incelemek.
+## Temel Linux Komutları
 
-**Ne yapılıyor:**  
-- FDR < 0.05 genler seçilir  
-- Expression matrisi normalize edilir  
-- Heatmap oluşturulur  
+pwd → bulunduğun dizini gösterir  
+ls → dosyaları listeler  
+ls -lh → boyutlarıyla listeler  
 
-Bu analiz:
-- genlerin grup bazlı clustering’ini gösterir  
+cd klasor → klasöre gir  
+cd .. → bir üst klasör  
+cd ~ → home dizini  
 
 ---
 
-## 08_GO_enrichment.R  
-**Amaç:**  
-Anlamlı genlerin hangi biyolojik süreçlerde yer aldığını belirlemek.
+## Dosya İşlemleri
 
-**Ne yapılıyor:**  
-- Gene Ontology (GO) enrichment analizi yapılır  
-- Biyolojik süreçler (BP), hücresel bileşenler (CC) ve moleküler fonksiyonlar (MF) incelenir  
-- biyolojik yorum üretir  
+mkdir klasor → klasör oluştur  
+mkdir -p a/b/c → iç içe klasör  
 
----
+touch dosya.txt → boş dosya oluştur  
 
-## 09_KEGG_enrichment.R  
-**Amaç:**  
-Genlerin hangi biyolojik yolaklarda (pathway) yer aldığını belirlemek.
+cp a.txt b.txt → kopyala  
+mv a.txt yeni.txt → taşı/yeniden adlandır  
 
-**Ne yapılıyor:**  
-- KEGG pathway enrichment analizi yapılır  
-- Anlamlı yolaklar belirlenir  
-
-Bu analiz:
-- hastalık mekanizmaları  
-- sinyal yolakları  
-hakkında bilgi verir  
+rm dosya.txt → dosya sil  
+rm -r klasor → klasör sil  
 
 ---
 
-# Genel Özet
-→ Filtering  
-→ Annotation  
-→ Differential Expression  
-→ Visualization  
-→ Functional Interpretation  
+## Dosya İçeriği
 
+cat dosya.txt → tamamını göster  
+head dosya.txt → ilk satırlar  
+tail dosya.txt → son satırlar  
+wc -l dosya.txt → satır sayısı  
 
+---
+
+## Komut Zinciri (Pipe)
+
+cat dosya.txt | wc -l  
+
+Bir komutun çıktısını diğerine verir.
+
+---
+
+# Conda Nedir?
+
+Conda, farklı yazılım ortamlarını izole şekilde yönetmeyi sağlar.
+
+### Neden Conda?
+
+- Her proje için ayrı environment  
+- Versiyon çakışması olmaz  
+- Reproducibility sağlar  
+
+---
+
+## Conda Komutları
+
+conda env list → ortamları listele  
+conda create -n env → yeni ortam  
+conda activate env → aktif et  
+conda deactivate → çık  
+
+---
+
+## Paket Kurulumu
+
+conda install paket  
+
+Biyoinformatik için:
+
+conda install -c bioconda seqkit  
+
+---
+
+# Tool Kullanımı
+
+Örnek tool: seqkit
+
+seqkit stats data/example.fasta  
+
+Bu komut:
+- kaç sequence var  
+- toplam uzunluk  
+- ortalama uzunluk  
+gibi bilgileri verir.
+
+---
+
+# Bash Script Nedir?
+
+Tek tek komut yazmak yerine otomatik çalıştırma sağlar.
+
+Örnek:
+
+#!/bin/bash  
+echo "Hello"  
+
+Çalıştırma:
+
+bash script.sh  
+
+---
+
+# Loop (Döngü)
+
+Aynı işlemi birden fazla dosyada çalıştırmak için:
+
+for file in data/*.fasta  
+do  
+  echo $file  
+done  
+
+---
+
+# HPC Nedir?
+
+HPC (High Performance Computing), büyük hesaplamaların güçlü bilgisayar kümelerinde yapılmasını sağlar.
+
+---
+
+## HPC Mimarisi
+
+Login node:
+- sisteme giriş yapılır  
+- küçük işler yapılır  
+
+Compute node:
+- gerçek hesaplama yapılır  
+- job burada çalışır  
+
+---
+
+# SLURM Nedir?
+
+SLURM, HPC sistemlerinde job yönetimi yapan scheduler’dır.
+
+Kullanıcı doğrudan compute node’da çalışmaz → job gönderir.
+
+---
+
+## Çalıştırma Farkı
+
+bash script.sh → lokal çalıştırma  
+sbatch script.sh → HPC çalıştırma  
+
+---
+
+## SLURM Script
+
+#!/bin/bash  
+#SBATCH --job-name=test  
+#SBATCH --output=results/slurm_%j.out  
+#SBATCH --error=results/slurm_%j.err  
+#SBATCH --time=00:05:00  
+#SBATCH --cpus-per-task=1  
+#SBATCH --mem=1G  
+
+Bu parametreler:
+- CPU  
+- RAM  
+- süre  
+gibi kaynakları belirler.
+
+---
+
+## SLURM Komutları
+
+sbatch script.sh → job gönder  
+squeue → jobları listele  
+squeue -u $USER → kendi jobların  
+scancel JOB_ID → job iptal  
+
+---
+
+## Çıktı Dosyaları
+
+results/slurm_JOBID.out  
+results/slurm_JOBID.err  
