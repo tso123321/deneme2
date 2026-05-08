@@ -7,3 +7,4 @@ which samtools
 
 /opt/conda/envs/hpc_course/...
 
+leman 
