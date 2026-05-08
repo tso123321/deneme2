@@ -1,0 +1,1 @@
+conda activete omics-course
